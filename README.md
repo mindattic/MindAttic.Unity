@@ -28,6 +28,7 @@ Shared Unity package for every MindAttic game: player profiles with one versione
 - **Safe files**: atomic writes (temp file, then replace), UTF-8 without BOM, LF, damaged files renamed `settings.json.bad-<timestamp>`.
 - **JSON without a dependency**: a small strict JSON reader/writer that keeps key order and exact number text, behind an injectable `IJsonCodec`.
 - **Root override** for tests and automation: `Profiles.UseRoot(path)`, the `MINDATTIC_PROFILES_ROOT` environment variable or a `-profiles-root <path>` command-line switch.
+- **Session mute** for tests and automation: the `MINDATTIC_CLI_MUTED=1` environment variable or a `-muted` command-line switch (read before the first scene loads, like the root override) mutes all audio for that run only. `CommonSettings` then reports music and SFX muted at volume 0, but settings.json is never written: the player's saved volumes and mutes are untouched. `Profiles.SessionMuted` turns it on or off from code.
 
 ## Quick start
 

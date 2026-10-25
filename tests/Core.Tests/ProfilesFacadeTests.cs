@@ -9,6 +9,7 @@ namespace Unity.Shared.Core.Tests
     {
         TempFolder dir;
         string savedEnv;
+        string savedMutedEnv;
 
         [SetUp]
         public void SetUp()
@@ -16,6 +17,9 @@ namespace Unity.Shared.Core.Tests
             dir = new TempFolder();
             savedEnv = Environment.GetEnvironmentVariable(Profiles.RootEnvironmentVariable);
             Environment.SetEnvironmentVariable(Profiles.RootEnvironmentVariable, null);
+            savedMutedEnv = Environment.GetEnvironmentVariable(Profiles.MutedEnvironmentVariable);
+            Environment.SetEnvironmentVariable(Profiles.MutedEnvironmentVariable, null);
+            Profiles.SessionMuted = false;
             Profiles.Reset();
         }
 
@@ -23,6 +27,8 @@ namespace Unity.Shared.Core.Tests
         public void TearDown()
         {
             Environment.SetEnvironmentVariable(Profiles.RootEnvironmentVariable, savedEnv);
+            Environment.SetEnvironmentVariable(Profiles.MutedEnvironmentVariable, savedMutedEnv);
+            Profiles.SessionMuted = false;
             Profiles.Reset();
             dir.Dispose();
         }
@@ -69,6 +75,43 @@ namespace Unity.Shared.Core.Tests
             Profiles.UseRoot(dir.Combine("Exact"));
             Assert.That(Profiles.Store.Root, Is.EqualTo(dir.Combine("Exact")));
             Assert.That(Profiles.IsConfigured, Is.True);
+        }
+
+        [Test]
+        public void SessionMuteReportsMutedWithoutTouchingSettingsJson()
+        {
+            Profiles.UseDataPath(dir.Path);
+            var common = Profiles.Current.Settings.Common;
+            common.MusicVolume = 0.4f;
+            Profiles.Current.SaveSettings();
+            string path = Path.Combine(dir.Path, "Profiles", "Default", "settings.json");
+            string before = File.ReadAllText(path);
+
+            Profiles.SessionMuted = true;
+            Assert.That(common.MuteMusic, Is.True);
+            Assert.That(common.MuteSfx, Is.True);
+            Assert.That(common.MusicVolume, Is.EqualTo(0f));
+            Assert.That(common.SfxVolume, Is.EqualTo(0f));
+
+            Profiles.Current.SaveSettings();
+            Assert.That(File.ReadAllText(path), Is.EqualTo(before), "the session mute never reaches settings.json");
+
+            Profiles.SessionMuted = false;
+            Assert.That(common.MuteMusic, Is.False);
+            Assert.That(common.MusicVolume, Is.EqualTo(0.4f));
+        }
+
+        [TestCase("1", true)]
+        [TestCase("true", true)]
+        [TestCase(" YES ", true)]
+        [TestCase("0", false)]
+        [TestCase("", false)]
+        public void MutedEnvironmentVariableIsReadAndApplied(string value, bool muted)
+        {
+            Environment.SetEnvironmentVariable(Profiles.MutedEnvironmentVariable, value);
+            Assert.That(Profiles.MutedOverride(), Is.EqualTo(muted));
+            Assert.That(Profiles.ApplyMutedOverride(), Is.EqualTo(muted));
+            Assert.That(Profiles.SessionMuted, Is.EqualTo(muted));
         }
     }
 }

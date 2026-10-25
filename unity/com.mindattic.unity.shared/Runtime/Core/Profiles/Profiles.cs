@@ -18,7 +18,54 @@ namespace Unity.Shared.Core
         /// <summary>A command-line switch naming a Profiles folder, as <c>-profiles-root &lt;path&gt;</c> or <c>-profiles-root=&lt;path&gt;</c>.</summary>
         public const string RootCommandLineSwitch = "-profiles-root";
 
+        /// <summary>An environment variable that, set to <c>1</c> (or <c>true</c>/<c>yes</c>/<c>on</c>), mutes all audio for this session (see <see cref="SessionMuted"/>).</summary>
+        public const string MutedEnvironmentVariable = "MINDATTIC_CLI_MUTED";
+
+        /// <summary>A command-line switch that mutes all audio for this session, as <c>-muted</c> (see <see cref="SessionMuted"/>).</summary>
+        public const string MutedCommandLineSwitch = "-muted";
+
         static ProfileStore store;
+
+        /// <summary>
+        /// A session-only audio mute: while true, every profile's <see cref="CommonSettings"/> reports music and
+        /// sound effects muted at volume 0, but the stored values are untouched, so nothing reaches settings.json
+        /// (saving writes the player's real values). The Unity bootstrap turns it on from
+        /// <see cref="MutedEnvironmentVariable"/> or <see cref="MutedCommandLineSwitch"/> before the first scene
+        /// loads, so a CLI or agent launching a game does not play sound.
+        /// </summary>
+        public static bool SessionMuted { get; set; }
+
+        /// <summary>Whether the environment variable or command line asks for a muted session.</summary>
+        public static bool MutedOverride()
+        {
+            string env = Environment.GetEnvironmentVariable(MutedEnvironmentVariable);
+            if (!string.IsNullOrWhiteSpace(env))
+            {
+                switch (env.Trim().ToLowerInvariant())
+                {
+                    case "1": case "true": case "yes": case "on": return true;
+                }
+            }
+            string[] args;
+            try
+            {
+                args = Environment.GetCommandLineArgs();
+            }
+            catch (NotSupportedException)
+            {
+                return false;
+            }
+            foreach (string a in args)
+                if (string.Equals(a, MutedCommandLineSwitch, StringComparison.OrdinalIgnoreCase)) return true;
+            return false;
+        }
+
+        /// <summary>Turns <see cref="SessionMuted"/> on if <see cref="MutedOverride"/> asks for it (never turns it off). Returns <see cref="SessionMuted"/>.</summary>
+        public static bool ApplyMutedOverride()
+        {
+            if (MutedOverride()) SessionMuted = true;
+            return SessionMuted;
+        }
 
         /// <summary>Whether a store has been set (by the Unity bootstrap, <see cref="UseRoot"/>, <see cref="UseDataPath"/> or the override).</summary>
         public static bool IsConfigured => store != null;

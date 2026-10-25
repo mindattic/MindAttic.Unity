@@ -49,31 +49,34 @@ namespace Unity.Shared.Core
         /// <summary>The raw <c>"common"</c> object, unknown fields and all.</summary>
         public JsonObject Data { get; }
 
-        /// <summary>Music volume, 0-1 (stored values outside that are clamped on read and write).</summary>
+        /// <summary>
+        /// Music volume, 0-1 (stored values outside that are clamped on read and write). Reads 0 while
+        /// <see cref="Profiles.SessionMuted"/> is on; the stored value is kept and still saved.
+        /// </summary>
         public float MusicVolume
         {
-            get => Clamp01(Data.GetFloat(Keys.MusicVolume, DefaultMusicVolume));
+            get => Profiles.SessionMuted ? 0f : Clamp01(Data.GetFloat(Keys.MusicVolume, DefaultMusicVolume));
             set => Data.Set(Keys.MusicVolume, Clamp01(value));
         }
 
-        /// <summary>Sound-effect volume, 0-1.</summary>
+        /// <summary>Sound-effect volume, 0-1. Reads 0 while <see cref="Profiles.SessionMuted"/> is on.</summary>
         public float SfxVolume
         {
-            get => Clamp01(Data.GetFloat(Keys.SfxVolume, DefaultSfxVolume));
+            get => Profiles.SessionMuted ? 0f : Clamp01(Data.GetFloat(Keys.SfxVolume, DefaultSfxVolume));
             set => Data.Set(Keys.SfxVolume, Clamp01(value));
         }
 
-        /// <summary>Music muted.</summary>
+        /// <summary>Music muted. Reads true while <see cref="Profiles.SessionMuted"/> is on.</summary>
         public bool MuteMusic
         {
-            get => Data.GetBool(Keys.MuteMusic, false);
+            get => Profiles.SessionMuted || Data.GetBool(Keys.MuteMusic, false);
             set => Data.Set(Keys.MuteMusic, value);
         }
 
-        /// <summary>Sound effects muted.</summary>
+        /// <summary>Sound effects muted. Reads true while <see cref="Profiles.SessionMuted"/> is on.</summary>
         public bool MuteSfx
         {
-            get => Data.GetBool(Keys.MuteSfx, false);
+            get => Profiles.SessionMuted || Data.GetBool(Keys.MuteSfx, false);
             set => Data.Set(Keys.MuteSfx, value);
         }
 

@@ -19,9 +19,13 @@ namespace Unity.Shared
         static void OnEditorLoad() => Initialize();
 #endif
 
-        /// <summary>Sets the data path unless a store is already configured. Safe to call more than once.</summary>
+        /// <summary>
+        /// Sets the data path unless a store is already configured, and applies the <c>-muted</c> /
+        /// <c>MINDATTIC_CLI_MUTED</c> session mute (in memory only). Safe to call more than once.
+        /// </summary>
         public static void Initialize()
         {
+            Profiles.ApplyMutedOverride();
             if (!Profiles.IsConfigured) Profiles.UseDataPath(Application.persistentDataPath);
         }
     }
