@@ -71,7 +71,7 @@ If `current.txt` is missing or names a profile that is not there, the first prof
 
 ### Profile names
 
-A name must make one folder on every platform: not blank, at most 64 characters, no leading or trailing spaces, not starting or ending with `.`, none of `/ \ : * ? " < > |` or control characters, and not a Windows device name (`CON`, `PRN`, `AUX`, `NUL`, `COM1`-`COM9`, `LPT1`-`LPT9`, with or without an extension). Names are unique ignoring case. These are UnitySpace's `ProfileStore.IsValidName` rules plus the dot, device-name and control-character rules.
+A name must make one folder on every platform: not blank, at most 64 characters, no leading or trailing spaces, not starting or ending with `.`, none of `/ \ : * ? " < > |` or control characters, and not a Windows device name (`CON`, `PRN`, `AUX`, `NUL`, `COM1`-`COM9`, `LPT1`-`LPT9`, with or without an extension). Names are unique ignoring case. These are Unity.SpaceGod's (formerly UnitySpace) `ProfileStore.IsValidName` rules plus the dot, device-name and control-character rules.
 
 ### settings.json
 
@@ -131,7 +131,7 @@ All in `Unity.Shared.Core` (engine-free) unless noted.
 
 ## JSON: why the package carries its own
 
-Games already ship their own Newtonsoft.Json (GridGameGaiden bundles `Newtonsoft.Json.dll`), so a second copy here would clash, and System.Text.Json is not part of Unity's .NET Standard 2.1 profile. Unity's `JsonUtility` drops unknown fields and needs the engine. So `Unity.Shared.Core` has `MiniJson`, about 300 lines of strict RFC 8259 reading and writing into an ordered `JsonObject` that keeps exact number text. It sits behind `IJsonCodec`: a game that wants Newtonsoft passes its own codec (`new ProfileStore(root, myCodec)` or `Profiles.UseDataPath(path, myCodec)`) that converts to and from `JsonObject`.
+Games already ship their own Newtonsoft.Json (Unity.GridGame's GridGameGaiden player bundles `Newtonsoft.Json.dll`), so a second copy here would clash, and System.Text.Json is not part of Unity's .NET Standard 2.1 profile. Unity's `JsonUtility` drops unknown fields and needs the engine. So `Unity.Shared.Core` has `MiniJson`, about 300 lines of strict RFC 8259 reading and writing into an ordered `JsonObject` that keeps exact number text. It sits behind `IJsonCodec`: a game that wants Newtonsoft passes its own codec (`new ProfileStore(root, myCodec)` or `Profiles.UseDataPath(path, myCodec)`) that converts to and from `JsonObject`.
 
 ## Naming
 
