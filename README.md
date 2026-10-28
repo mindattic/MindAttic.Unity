@@ -162,6 +162,7 @@ It builds `Runtime/Core` as Unity does (netstandard2.1, C# 9) first, then runs t
 
 - [docs/USER_STORIES.md](docs/USER_STORIES.md): the ticket log.
 - [AGENTS.md](AGENTS.md): agent instructions.
+- [assets/README.md](assets/README.md): the standard Unity app icon every MindAttic port should use.
 
 ## License
 
